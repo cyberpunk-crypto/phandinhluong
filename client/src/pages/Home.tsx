@@ -154,7 +154,7 @@ export default function Home() {
           <div className="section-index">03 <span>/</span> dấu ấn</div>
           <div className="work-heading-row"><div className="section-heading"><p className="eyebrow">Những chương trình đã dẫn</p><h2>Những sân khấu<br /><em>còn ở lại.</em></h2></div><p className="work-intro">Mỗi chương trình là một lần kết nối với khán giả. Đây là vài dấu mốc nổi bật trong hành trình làm nghề.</p></div>
           <div className="project-grid">{projects.map((project, index) => <article className={`project-card project-${project.tone}`} key={project.title}><div className="project-image"><img src={project.image} alt={project.title} /><span className="project-index">0{index + 1}</span><button type="button" aria-label={`Xem ${project.title}`}><ArrowUpRight size={18} /></button></div><p>{project.category}</p><h3>{project.title}</h3></article>)}</div>
-          <div className="milestone-strip"><div className="milestone-title"><Award size={22} /><span>Điểm nhấn<br />hành trình</span></div>{milestones.map((item) => <div className="milestone" key={item.year}><span>{item.year}</span><strong>{item.title}</strong><p>{item.text}</p></div>)}</div>
+          <div className="milestone-strip"><div className="milestone-title"><Award size={22} /><span>Điểm nhấn<br />hành trình</span></div>{milestones.map((item) => <div className="milestone" key={`${item.year}-${item.title}`}><span>{item.year}</span><strong>{item.title}</strong><p>{item.text}</p></div>)}</div>
         </section>
 
         <section className="quote-section">
