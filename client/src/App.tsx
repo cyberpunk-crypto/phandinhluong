@@ -6,7 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 
-const appBase = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
+const appBase = typeof window !== "undefined" && window.location.pathname.startsWith("/phandinhluong") ? "/phandinhluong" : "/";
 
 function Router() {
   return (
