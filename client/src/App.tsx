@@ -6,9 +6,11 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 
+const appBase = import.meta.env.BASE_URL.replace(/\/$/, "") || "/";
+
 function Router() {
   return (
-    <WouterRouter base={import.meta.env.BASE_URL}>
+    <WouterRouter base={appBase}>
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/404" component={NotFound} />
