@@ -125,7 +125,7 @@ export default function Home() {
           </div>
           <div className="hero-visual">
             <div className="hero-arch" />
-            <img src="/media/phan/hero.png" alt="Phan Đình Lương trong vai trò MC" />
+            <img src="/media/phan/hero-cropped.png" alt="Phan Đình Lương trong vai trò MC" />
             <div className="hero-stamp"><span>listen</span><span>connect</span><span>retell</span></div>
             <div className="hero-caption"><Quote size={17} fill="currentColor" /><span>“Trẻ trung trong năng lượng. Chuyên nghiệp trong từng khoảnh khắc.”</span></div>
           </div>
@@ -142,7 +142,7 @@ export default function Home() {
             <div className="section-heading"><p className="eyebrow">Về Phan Lương</p><h2>Một gương mặt<br /><em>sinh ra cho sân khấu.</em></h2></div>
             <div className="intro-body"><p className="intro-lede">Từ sân khấu kịch đến những chương trình quy mô lớn, tôi luôn tìm kiếm khoảnh khắc một câu chuyện thật sự chạm đến khán giả.</p><p>Tôi là Phan Đình Lương — cử nhân Diễn viên Kịch – Điện ảnh, Á khoa đầu ra và hiện công tác tại Nhà hát Kịch Hà Nội. Với 03 năm kinh nghiệm MC, tôi mang đến chất giọng miền Bắc cùng phong cách trẻ trung, linh hoạt, giàu năng lượng.</p><div className="signature">Phan Lương <span>— born for the stage</span></div></div>
           </div>
-          <div className="intro-collage"><div className="collage-main"><img src="/media/phan/stage.png" alt="Phan Đình Lương trên sân khấu" /></div><div className="collage-card"><Sparkles size={20} /><strong>Điều tôi mang đến</strong><p>Không chỉ là nói hay. Là làm chủ không khí và tạo kết nối.</p></div><div className="collage-side"><span>Nhà hát Kịch Hà Nội</span><span>Thanh Hóa</span><span>Since 2001</span></div></div>
+          <div className="intro-collage"><div className="collage-main"><img src="/media/phan/stage-cropped.png" alt="Phan Đình Lương trên sân khấu" /></div><div className="collage-card"><Sparkles size={20} /><strong>Điều tôi mang đến</strong><p>Không chỉ là nói hay. Là làm chủ không khí và tạo kết nối.</p></div><div className="collage-side"><span>Nhà hát Kịch Hà Nội</span><span>Thanh Hóa</span><span>Since 2001</span></div></div>
           <div className="profile-facts" aria-label="Thông tin hồ sơ Phan Đình Lương"><div><span>01</span><strong>Năm sinh</strong><p>2001</p></div><div><span>02</span><strong>Chiều cao</strong><p>175 cm</p></div><div><span>03</span><strong>Quê quán</strong><p>Thanh Hóa</p></div><div><span>04</span><strong>Chất giọng</strong><p>Miền Bắc</p></div><div><span>05</span><strong>Chuyên môn</strong><p>Cử nhân Diễn viên Kịch – Điện ảnh</p></div><div><span>06</span><strong>Đơn vị công tác</strong><p>Nhà hát Kịch Hà Nội</p></div><div><span>07</span><strong>Kinh nghiệm</strong><p>03 năm MC chuyên nghiệp</p></div><div><span>08</span><strong>Dấu ấn</strong><p>Á khoa đầu ra</p></div></div>
         </section>
 
