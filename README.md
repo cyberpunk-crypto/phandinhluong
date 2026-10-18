@@ -1,4 +1,4 @@
-# Nguyễn Đăng Tình — Personal Website
+# Phan Đình Lương — MC & Diễn viên
 
 React / Express / tRPC / Drizzle starter, adapted from the Sandbox web-db-user template.
 
