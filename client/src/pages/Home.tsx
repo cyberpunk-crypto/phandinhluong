@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import {
   ArrowDown,
   ArrowUpRight,
@@ -77,6 +77,7 @@ function scrollToId(id: string) {
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("gioi-thieu");
+  const [bookingSent, setBookingSent] = useState(false);
 
   useEffect(() => {
     const sections = navItems.map((item) => document.querySelector(item.href)).filter(Boolean) as Element[];
@@ -94,6 +95,21 @@ export default function Home() {
   const handleNav = (href: string) => {
     setMenuOpen(false);
     scrollToId(href);
+  };
+
+  const handleBookingSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const summary = [
+      `Họ tên: ${data.get("name")}`,
+      `Liên hệ: ${data.get("contact")}`,
+      `Loại chương trình: ${data.get("eventType")}`,
+      `Ngày dự kiến: ${data.get("eventDate") || "Chưa xác định"}`,
+      `Nội dung: ${data.get("brief") || "Chưa có"}`,
+    ].join("\n");
+    void navigator.clipboard?.writeText(summary);
+    setBookingSent(true);
+    window.open("https://jobg.my.canva.site/profilemcphanluong", "_blank", "noopener,noreferrer");
   };
 
   return (
@@ -170,7 +186,7 @@ export default function Home() {
 
         <section id="ket-noi" className="contact-section section-frame anchor-section">
           <div className="contact-copy"><div className="section-index">04 <span>/</span> kết nối</div><p className="eyebrow">Có một sân khấu đang chờ được dẫn?</p><h2>Hãy để tôi<br /><em>lên sân khấu.</em></h2><p className="contact-lede">Nếu bạn đang tìm một MC trẻ trung, linh hoạt và có kinh nghiệm xử lý sân khấu — hãy bắt đầu một cuộc trò chuyện.</p><a className="email-link" href="https://jobg.my.canva.site/profilemcphanluong" target="_blank" rel="noreferrer">profile Phan Lương <ArrowUpRight size={19} /></a></div>
-          <div className="contact-card"><p className="eyebrow">Bắt đầu từ đây</p><h3>Chia sẻ với tôi<br />về chương trình của bạn.</h3><div className="contact-checks"><span><Check size={14} /> Sự kiện & sân khấu</span><span><Check size={14} /> Cuộc thi & fashion show</span><span><Check size={14} /> Họp báo & ra mắt sản phẩm</span></div><a href="https://jobg.my.canva.site/profilemcphanluong" target="_blank" rel="noreferrer" className="button button-light">Xem profile đầy đủ <ArrowUpRight size={17} /></a><span className="contact-small">Thông tin chi tiết có trong profile Canva</span></div>
+          <div className="contact-card"><p className="eyebrow">Bắt đầu từ đây</p><h3>Chia sẻ với tôi<br />về chương trình của bạn.</h3><div className="contact-checks"><span><Check size={14} /> Sự kiện & sân khấu</span><span><Check size={14} /> Cuộc thi & fashion show</span><span><Check size={14} /> Họp báo & ra mắt sản phẩm</span></div><form className="booking-form" onSubmit={handleBookingSubmit}><label>Họ tên<input name="name" required placeholder="Tên của bạn" /></label><label>Số điện thoại / Email<input name="contact" required placeholder="Cách để tôi liên hệ" /></label><div className="booking-row"><label>Loại chương trình<select name="eventType" defaultValue="Sự kiện & sân khấu"><option>Sự kiện & sân khấu</option><option>Cuộc thi / fashion show</option><option>Họp báo / ra mắt</option><option>Khác</option></select></label><label>Ngày dự kiến<input name="eventDate" type="date" /></label></div><label>Nội dung cần trao đổi<textarea name="brief" rows={3} placeholder="Địa điểm, quy mô, thời lượng..." /></label><button className="button button-light booking-submit" type="submit">Gửi yêu cầu đặt lịch <ArrowUpRight size={17} /></button>{bookingSent && <p className="booking-status" role="status">Đã chuẩn bị nội dung yêu cầu và copy vào clipboard. Profile Canva đã được mở để bạn gửi trực tiếp.</p>}</form><a href="https://jobg.my.canva.site/profilemcphanluong" target="_blank" rel="noreferrer" className="button button-light contact-profile-link">Xem profile đầy đủ <ArrowUpRight size={17} /></a><span className="contact-small">Website GitHub Pages không có backend email; form sẽ copy nội dung để bạn gửi qua profile Canva.</span></div>
         </section>
       </main>
 

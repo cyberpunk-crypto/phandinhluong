@@ -162,6 +162,17 @@ blockquote { margin: 24px 0 32px; font-family: var(--serif); font-size: clamp(41
 .contact-checks svg { padding: 2px; border: 1px solid rgba(251,248,242,.6); border-radius: 50%; }
 .contact-card .button { margin-top: 34px; }
 .contact-small { display: block; margin-top: 17px; color: rgba(251,248,242,.64); font-size: 10px; }
+.booking-form { display: flex; flex-direction: column; gap: 12px; margin-top: 25px; padding-top: 22px; border-top: 1px solid rgba(251,248,242,.28); }
+.booking-form label { display: flex; flex-direction: column; gap: 6px; color: rgba(251,248,242,.76); font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
+.booking-form input, .booking-form select, .booking-form textarea { width: 100%; border: 1px solid rgba(251,248,242,.35); background: rgba(80, 36, 21, .16); color: var(--cream); padding: 10px 11px; font: inherit; font-size: 12px; letter-spacing: 0; text-transform: none; outline: none; }
+.booking-form input::placeholder, .booking-form textarea::placeholder { color: rgba(251,248,242,.55); }
+.booking-form input:focus, .booking-form select:focus, .booking-form textarea:focus { border-color: var(--cream); }
+.booking-form select option { color: var(--ink); }
+.booking-form textarea { resize: vertical; min-height: 70px; line-height: 1.45; }
+.booking-row { display: grid; grid-template-columns: 1.2fr .8fr; gap: 10px; }
+.booking-submit { width: 100%; margin-top: 7px !important; border: 0; cursor: pointer; }
+.booking-status { color: rgba(251,248,242,.86); font-size: 11px; line-height: 1.5; }
+.contact-profile-link { margin-top: 14px !important; }
 
 .site-footer { padding: 45px 48px 29px; background: #ded1c1; }
 .footer-top, .footer-bottom { display: flex; justify-content: space-between; align-items: center; }
@@ -246,5 +257,6 @@ blockquote { margin: 24px 0 32px; font-family: var(--serif); font-size: clamp(41
   .email-link { font-size: 18px; }
   .contact-card { padding: 30px 24px; }
   .contact-card h3 { font-size: 36px; }
+  .booking-row { grid-template-columns: 1fr; gap: 12px; }
   .footer-bottom { align-items: flex-start; flex-direction: column; gap: 14px; margin-top: 45px; }
 }
