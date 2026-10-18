@@ -29,39 +29,39 @@ const capabilities = [
   {
     number: "01",
     icon: Mic2,
-    title: "Dẫn chương trình",
-    text: "Kiến tạo nhịp điệu, cảm xúc và sự kết nối để mỗi chương trình có một câu chuyện riêng.",
-    tags: ["Sự kiện", "Tọa đàm", "Lễ tốt nghiệp"],
-    image: "/media/skills-1.webp",
+    title: "MC sự kiện",
+    text: "Làm chủ sân khấu lớn, xử lý tình huống linh hoạt và giữ nhịp chương trình trẻ trung, giàu năng lượng.",
+    tags: ["Họp báo", "Gala", "Lễ hội"],
+    image: "/media/phan/stage.png",
   },
   {
     number: "02",
     icon: Users,
-    title: "Đào tạo & mentoring",
-    text: "Đồng hành cùng những người trẻ đang tìm thấy tiếng nói tự tin và phong cách dẫn của riêng mình.",
-    tags: ["Mentor", "Kỹ năng mềm", "On The Mic"],
-    image: "/media/skills-2.webp",
+    title: "Sân khấu & cuộc thi",
+    text: "Đồng hành cùng các sân chơi văn hóa, thời trang và sắc đẹp bằng phong thái tự tin, linh hoạt.",
+    tags: ["Miss Tourism", "Fashion show", "Cuộc thi"],
+    image: "/media/phan/event-tourism.jpg",
   },
   {
     number: "03",
     icon: PenLine,
-    title: "Biên tập nội dung",
-    text: "Chắt lọc thông điệp, viết nên lời dẫn tự nhiên và biến ý tưởng thành trải nghiệm đáng nhớ.",
-    tags: ["Kịch bản", "Biên tập", "Kể chuyện"],
-    image: "/media/profile.webp",
+    title: "Kết nối thương hiệu",
+    text: "Phối hợp cùng KOL, KOC, nghệ sĩ và đối tác truyền thông để biến thông điệp thành trải nghiệm.",
+    tags: ["Công nghệ", "Giáo dục", "Kinh tế"],
+    image: "/media/phan/event-fashion.jpg",
   },
 ];
 
 const milestones = [
-  { year: "2026", title: "Mentor On The Mic", text: "Đồng hành cùng các gương mặt dẫn chương trình trẻ tại Đại học Bách khoa Hà Nội." },
-  { year: "2025", title: "Quán quân MC Truyền hình", text: "Học viện Kỹ năng mềm ST Lighthouse — dấu mốc mở ra một hành trình mới." },
-  { year: "2024", title: "Top 20 MC Volunteer", text: "Góp tiếng nói và năng lượng trong một sân chơi dành cho những người yêu nghề dẫn." },
+  { year: "2025", title: "Miss Tourism Ethnic Vietnam", text: "Đồng hành cùng cuộc thi Hoa hậu Du lịch Dân tộc Việt Nam 2025 trong vai trò MC." },
+  { year: "2025", title: "Night Wonder Fashion Show", text: "Dẫn dắt đêm thời trang tại Vinpearl Nha Trang cùng Diễm Quỳnh." },
+  { year: "2024", title: "Nhà hát Kịch Hà Nội", text: "Gia nhập môi trường sân khấu chuyên nghiệp sau khi tốt nghiệp Á khoa Diễn viên Kịch – Điện ảnh." },
 ];
 
 const projects = [
-  { category: "Sự kiện thương hiệu", title: "Honda — Chạm tới trải nghiệm", image: "/media/event-1.webp", tone: "terracotta" },
-  { category: "Sự kiện cộng đồng", title: "Dấu ấn Việt Nam", image: "/media/event-2.webp", tone: "ink" },
-  { category: "Sân khấu & lễ hội", title: "Những khoảnh khắc ở lại", image: "/media/event-3.webp", tone: "olive" },
+  { category: "Cuộc thi sắc đẹp", title: "Hoa hậu Du lịch Dân tộc Việt Nam 2025", image: "/media/phan/event-tourism.jpg", tone: "terracotta" },
+  { category: "Đêm thi tài năng", title: "The Talent Night — Mộc Châu Island", image: "/media/phan/event-talent.jpg", tone: "ink" },
+  { category: "Fashion show", title: "Night Wonder — Vinpearl Nha Trang", image: "/media/phan/event-fashion.jpg", tone: "olive" },
 ];
 
 function scrollToId(id: string) {
@@ -94,8 +94,8 @@ export default function Home() {
     <div className="site-shell">
       <header className="site-header">
         <a className="wordmark" href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }} aria-label="Về đầu trang">
-          <span className="wordmark-mark">ĐT</span>
-          <span className="wordmark-copy"><strong>Đăng Tình</strong><em>storyteller / host</em></span>
+          <span className="wordmark-mark">PL</span>
+          <span className="wordmark-copy"><strong>Phan Lương</strong><em>mc / actor</em></span>
         </a>
         <nav className={`desktop-nav ${menuOpen ? "is-open" : ""}`} aria-label="Điều hướng chính">
           {navItems.map((item) => (
@@ -113,61 +113,61 @@ export default function Home() {
       <main id="top">
         <section className="hero-section section-frame">
           <div className="hero-copy">
-            <p className="eyebrow"><span className="eyebrow-dot" /> Nguyễn Đăng Tình / 2026</p>
-            <h1>Người kể chuyện<br /><em>bằng giọng nói.</em></h1>
-            <p className="hero-lede">Tôi tin rằng một chương trình đáng nhớ bắt đầu từ sự lắng nghe — rồi được kể lại bằng sự chân thành, tinh tế và một chút bất ngờ.</p>
+            <p className="eyebrow"><span className="eyebrow-dot" /> Phan Đình Lương / 2026</p>
+            <h1>MC kể chuyện<br /><em>bằng năng lượng.</em></h1>
+            <p className="hero-lede">Tôi tin rằng một chương trình đáng nhớ bắt đầu từ sự hiện diện — rồi được dẫn dắt bằng năng lượng, sự linh hoạt và một chút bất ngờ.</p>
             <div className="hero-actions">
               <button className="button button-dark" type="button" onClick={() => scrollToId("#ket-noi")}>Đặt lịch cùng tôi <ArrowUpRight size={17} /></button>
               <button className="text-link" type="button" onClick={() => scrollToId("#dau-an")}>Xem dấu ấn <ArrowDown size={16} /></button>
             </div>
-            <div className="hero-note"><span className="note-line" /><span>MC · Mentor · Biên tập viên</span></div>
+            <div className="hero-note"><span className="note-line" /><span>MC · Diễn viên · Nhà hát Kịch Hà Nội</span></div>
           </div>
           <div className="hero-visual">
             <div className="hero-arch" />
-            <img src="/media/hero-portrait.webp" alt="Nguyễn Đăng Tình trong trang phục vest" />
+            <img src="/media/phan/hero.png" alt="Phan Đình Lương trong vai trò MC" />
             <div className="hero-stamp"><span>listen</span><span>connect</span><span>retell</span></div>
-            <div className="hero-caption"><Quote size={17} fill="currentColor" /><span>“Lắng nghe, kết nối và kể lại những điều có ý nghĩa.”</span></div>
+            <div className="hero-caption"><Quote size={17} fill="currentColor" /><span>“Trẻ trung trong năng lượng. Chuyên nghiệp trong từng khoảnh khắc.”</span></div>
           </div>
           <div className="hero-scroll"><span>Cuộn để khám phá</span><span className="scroll-line" /></div>
         </section>
 
         <div className="ticker" aria-label="Lĩnh vực hoạt động">
-          <div className="ticker-track"><span>HOSTING</span><i>✳</i><span>MENTORING</span><i>✳</i><span>STORYTELLING</span><i>✳</i><span>CONTENT</span><i>✳</i><span>HOSTING</span><i>✳</i><span>MENTORING</span><i>✳</i></div>
+          <div className="ticker-track"><span>HOSTING</span><i>✳</i><span>STAGE</span><i>✳</i><span>FASHION</span><i>✳</i><span>ENERGY</span><i>✳</i><span>HOSTING</span><i>✳</i><span>STAGE</span><i>✳</i></div>
         </div>
 
         <section id="gioi-thieu" className="intro-section section-frame anchor-section">
           <div className="section-index">01 <span>/</span> câu chuyện</div>
           <div className="intro-layout">
-            <div className="section-heading"><p className="eyebrow">Về Đăng Tình</p><h2>Một giọng nói<br /><em>có điều muốn kể.</em></h2></div>
-            <div className="intro-body"><p className="intro-lede">Từ những sân khấu đầu tiên đến những buổi trò chuyện nhiều chiều, tôi luôn tìm kiếm khoảnh khắc con người thật xuất hiện sau ánh đèn.</p><p>Tôi làm MC, mentor và biên tập nội dung. Ba vai trò khác nhau nhưng cùng bắt đầu từ một điều: đặt câu hỏi đúng, lắng nghe đủ sâu và kể lại câu chuyện theo cách gần gũi nhất.</p><div className="signature">Đăng Tình <span>— keep it human</span></div></div>
+            <div className="section-heading"><p className="eyebrow">Về Phan Lương</p><h2>Một gương mặt<br /><em>sinh ra cho sân khấu.</em></h2></div>
+            <div className="intro-body"><p className="intro-lede">Từ sân khấu kịch đến những chương trình quy mô lớn, tôi luôn tìm kiếm khoảnh khắc một câu chuyện thật sự chạm đến khán giả.</p><p>Tôi là Phan Đình Lương — cử nhân Diễn viên Kịch – Điện ảnh, Á khoa đầu ra và hiện công tác tại Nhà hát Kịch Hà Nội. Với 03 năm kinh nghiệm MC, tôi mang đến chất giọng miền Bắc cùng phong cách trẻ trung, linh hoạt, giàu năng lượng.</p><div className="signature">Phan Lương <span>— born for the stage</span></div></div>
           </div>
-          <div className="intro-collage"><div className="collage-main"><img src="/media/profile.webp" alt="Chân dung Nguyễn Đăng Tình" /></div><div className="collage-card"><Sparkles size={20} /><strong>Điều tôi theo đuổi</strong><p>Không chỉ là nói hay. Là tạo ra cảm giác được lắng nghe.</p></div><div className="collage-side"><span>Hà Nội</span><span>Việt Nam</span><span>Since 2020</span></div></div>
+          <div className="intro-collage"><div className="collage-main"><img src="/media/phan/stage.png" alt="Phan Đình Lương trên sân khấu" /></div><div className="collage-card"><Sparkles size={20} /><strong>Điều tôi mang đến</strong><p>Không chỉ là nói hay. Là làm chủ không khí và tạo kết nối.</p></div><div className="collage-side"><span>Nhà hát Kịch Hà Nội</span><span>Thanh Hóa</span><span>Since 2001</span></div></div>
         </section>
 
         <section id="nang-luc" className="capability-section section-frame anchor-section">
           <div className="section-index">02 <span>/</span> năng lực</div>
-          <div className="section-heading wide-heading"><p className="eyebrow">Tôi có thể đồng hành ở đâu?</p><h2>Ba cách để một<br /><em>ý tưởng cất tiếng.</em></h2></div>
+          <div className="section-heading wide-heading"><p className="eyebrow">Phan Lương nhận lời dẫn ở đâu?</p><h2>Ba thế mạnh<br /><em>trên sân khấu.</em></h2></div>
           <div className="capability-grid">{capabilities.map((item) => { const Icon = item.icon; return <article className="capability-card" key={item.number}><div className="capability-top"><span>{item.number}</span><Icon size={21} strokeWidth={1.5} /></div><div className="capability-image"><img src={item.image} alt={item.title} /></div><h3>{item.title}</h3><p>{item.text}</p><div className="tag-list">{item.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></article>; })}</div>
         </section>
 
         <section id="dau-an" className="work-section section-frame anchor-section">
           <div className="section-index">03 <span>/</span> dấu ấn</div>
-          <div className="work-heading-row"><div className="section-heading"><p className="eyebrow">Một vài chương đã đi qua</p><h2>Những khoảnh khắc<br /><em>ở lại sau sân khấu.</em></h2></div><p className="work-intro">Mỗi chương trình là một bài tập về sự hiện diện. Đây là vài dấu mốc tôi trân trọng trên hành trình ấy.</p></div>
+          <div className="work-heading-row"><div className="section-heading"><p className="eyebrow">Những chương trình đã dẫn</p><h2>Những sân khấu<br /><em>còn ở lại.</em></h2></div><p className="work-intro">Mỗi chương trình là một lần kết nối với khán giả. Đây là vài dấu mốc nổi bật trong hành trình làm nghề.</p></div>
           <div className="project-grid">{projects.map((project, index) => <article className={`project-card project-${project.tone}`} key={project.title}><div className="project-image"><img src={project.image} alt={project.title} /><span className="project-index">0{index + 1}</span><button type="button" aria-label={`Xem ${project.title}`}><ArrowUpRight size={18} /></button></div><p>{project.category}</p><h3>{project.title}</h3></article>)}</div>
           <div className="milestone-strip"><div className="milestone-title"><Award size={22} /><span>Điểm nhấn<br />hành trình</span></div>{milestones.map((item) => <div className="milestone" key={item.year}><span>{item.year}</span><strong>{item.title}</strong><p>{item.text}</p></div>)}</div>
         </section>
 
         <section className="quote-section">
-          <div className="quote-inner"><Quote size={36} /><blockquote>“Sân khấu không cần một người nói nhiều nhất. Sân khấu cần một người biết khi nào nên cất lời.”</blockquote><div className="quote-author"><span /> Nguyễn Đăng Tình</div></div>
+          <div className="quote-inner"><Quote size={36} /><blockquote>“Một MC tốt không chỉ dẫn chương trình. Họ dẫn cảm xúc của cả khán phòng.”</blockquote><div className="quote-author"><span /> Phan Đình Lương</div></div>
         </section>
 
         <section id="ket-noi" className="contact-section section-frame anchor-section">
-          <div className="contact-copy"><div className="section-index">04 <span>/</span> kết nối</div><p className="eyebrow">Có một chương trình đang chờ được kể?</p><h2>Hãy để tôi<br /><em>đồng hành.</em></h2><p className="contact-lede">Nếu bạn đang tìm một người dẫn biết lắng nghe, một mentor tận tâm hoặc một biên tập viên hiểu tinh thần thương hiệu — chúng ta nên nói chuyện.</p><a className="email-link" href="mailto:hello@dangtinhspeaks.vn">hello@dangtinhspeaks.vn <ArrowUpRight size={19} /></a></div>
-          <div className="contact-card"><p className="eyebrow">Bắt đầu từ đây</p><h3>Gửi tôi vài dòng<br />về ý tưởng của bạn.</h3><div className="contact-checks"><span><Check size={14} /> Sự kiện & sân khấu</span><span><Check size={14} /> Đào tạo & mentoring</span><span><Check size={14} /> Nội dung & kịch bản</span></div><a href="mailto:hello@dangtinhspeaks.vn?subject=Đặt lịch cùng Đăng Tình" className="button button-light">Đặt lịch ngay <ArrowUpRight size={17} /></a><span className="contact-small">Phản hồi trong vòng 24 giờ làm việc</span></div>
+          <div className="contact-copy"><div className="section-index">04 <span>/</span> kết nối</div><p className="eyebrow">Có một sân khấu đang chờ được dẫn?</p><h2>Hãy để tôi<br /><em>lên sân khấu.</em></h2><p className="contact-lede">Nếu bạn đang tìm một MC trẻ trung, linh hoạt và có kinh nghiệm xử lý sân khấu — hãy bắt đầu một cuộc trò chuyện.</p><a className="email-link" href="https://jobg.my.canva.site/profilemcphanluong" target="_blank" rel="noreferrer">profile Phan Lương <ArrowUpRight size={19} /></a></div>
+          <div className="contact-card"><p className="eyebrow">Bắt đầu từ đây</p><h3>Chia sẻ với tôi<br />về chương trình của bạn.</h3><div className="contact-checks"><span><Check size={14} /> Sự kiện & sân khấu</span><span><Check size={14} /> Cuộc thi & fashion show</span><span><Check size={14} /> Họp báo & ra mắt sản phẩm</span></div><a href="https://jobg.my.canva.site/profilemcphanluong" target="_blank" rel="noreferrer" className="button button-light">Xem profile đầy đủ <ArrowUpRight size={17} /></a><span className="contact-small">Thông tin chi tiết có trong profile Canva</span></div>
         </section>
       </main>
 
-      <footer className="site-footer"><div className="footer-top"><a className="wordmark footer-wordmark" href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }}><span className="wordmark-mark">ĐT</span><span className="wordmark-copy"><strong>Đăng Tình</strong><em>storyteller / host</em></span></a><div className="footer-socials"><a href="https://www.facebook.com/dangtinh199/" target="_blank" rel="noreferrer">Facebook <ArrowUpRight size={14} /></a><a href="https://www.youtube.com/@mcdangtinh" target="_blank" rel="noreferrer">YouTube <ArrowUpRight size={14} /></a><a href="https://www.instagram.com/dangtinh199/" target="_blank" rel="noreferrer">Instagram <ArrowUpRight size={14} /></a><a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn <ArrowUpRight size={14} /></a></div></div><div className="footer-bottom"><span>© 2026 Nguyễn Đăng Tình</span><span>Made with intention in Hà Nội</span><a href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }}>Lên đầu trang <ArrowUpRight size={14} /></a></div></footer>
+      <footer className="site-footer"><div className="footer-top"><a className="wordmark footer-wordmark" href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }}><span className="wordmark-mark">PL</span><span className="wordmark-copy"><strong>Phan Lương</strong><em>mc / actor</em></span></a><div className="footer-socials"><a href="https://jobg.my.canva.site/profilemcphanluong" target="_blank" rel="noreferrer">Canva Profile <ArrowUpRight size={14} /></a><a href="https://github.com/phandinhluong" target="_blank" rel="noreferrer">GitHub <ArrowUpRight size={14} /></a><a href="https://www.facebook.com/" target="_blank" rel="noreferrer">Facebook <ArrowUpRight size={14} /></a><a href="https://www.linkedin.com/" target="_blank" rel="noreferrer">LinkedIn <ArrowUpRight size={14} /></a></div></div><div className="footer-bottom"><span>© 2026 Phan Đình Lương</span><span>Made with intention in Hà Nội</span><a href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }}>Lên đầu trang <ArrowUpRight size={14} /></a></div></footer>
     </div>
   );
 }
