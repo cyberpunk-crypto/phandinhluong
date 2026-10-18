@@ -62,6 +62,7 @@ const projects = [
   { category: "Cuộc thi sắc đẹp", title: "Hoa hậu Du lịch Dân tộc Việt Nam 2025", image: "/media/phan/event-tourism.jpg", tone: "terracotta" },
   { category: "Đêm thi tài năng", title: "The Talent Night — Mộc Châu Island", image: "/media/phan/event-talent.jpg", tone: "ink" },
   { category: "Fashion show", title: "Night Wonder — Vinpearl Nha Trang", image: "/media/phan/event-fashion.jpg", tone: "olive" },
+  { category: "Sân khấu cuộc thi", title: "Bikini Show — Người đẹp biển", image: "/media/phan/event-beach.jpg", tone: "terracotta" },
 ];
 
 function scrollToId(id: string) {
@@ -142,6 +143,7 @@ export default function Home() {
             <div className="intro-body"><p className="intro-lede">Từ sân khấu kịch đến những chương trình quy mô lớn, tôi luôn tìm kiếm khoảnh khắc một câu chuyện thật sự chạm đến khán giả.</p><p>Tôi là Phan Đình Lương — cử nhân Diễn viên Kịch – Điện ảnh, Á khoa đầu ra và hiện công tác tại Nhà hát Kịch Hà Nội. Với 03 năm kinh nghiệm MC, tôi mang đến chất giọng miền Bắc cùng phong cách trẻ trung, linh hoạt, giàu năng lượng.</p><div className="signature">Phan Lương <span>— born for the stage</span></div></div>
           </div>
           <div className="intro-collage"><div className="collage-main"><img src="/media/phan/stage.png" alt="Phan Đình Lương trên sân khấu" /></div><div className="collage-card"><Sparkles size={20} /><strong>Điều tôi mang đến</strong><p>Không chỉ là nói hay. Là làm chủ không khí và tạo kết nối.</p></div><div className="collage-side"><span>Nhà hát Kịch Hà Nội</span><span>Thanh Hóa</span><span>Since 2001</span></div></div>
+          <div className="profile-facts" aria-label="Thông tin hồ sơ Phan Đình Lương"><div><span>01</span><strong>Năm sinh</strong><p>2001</p></div><div><span>02</span><strong>Chiều cao</strong><p>175 cm</p></div><div><span>03</span><strong>Quê quán</strong><p>Thanh Hóa</p></div><div><span>04</span><strong>Chất giọng</strong><p>Miền Bắc</p></div><div><span>05</span><strong>Chuyên môn</strong><p>Cử nhân Diễn viên Kịch – Điện ảnh</p></div><div><span>06</span><strong>Đơn vị công tác</strong><p>Nhà hát Kịch Hà Nội</p></div><div><span>07</span><strong>Kinh nghiệm</strong><p>03 năm MC chuyên nghiệp</p></div><div><span>08</span><strong>Dấu ấn</strong><p>Á khoa đầu ra</p></div></div>
         </section>
 
         <section id="nang-luc" className="capability-section section-frame anchor-section">
