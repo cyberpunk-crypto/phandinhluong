@@ -16,8 +16,18 @@ import {
   X,
 } from "lucide-react";
 import { eventMedia, extraMedia, partnerBoardImage, partnerUnits, profileGallery, videoMedia } from "../content/media";
+import { trpc } from "../lib/trpc";
+
+type VideoCardItem = {
+  id: string;
+  title: string;
+  category: string;
+  src: string;
+  poster?: string;
+};
 
 const siteAsset = (path: string) => {
+  if (path.startsWith("/manus-storage/") || path.startsWith("http://") || path.startsWith("https://")) return path;
   const base = import.meta.env.BASE_URL;
   if (path.startsWith(base)) return path;
   return `${base}${path.replace(/^\/+/, "")}`;
@@ -118,7 +128,15 @@ export default function Home() {
   const [mediaTab, setMediaTab] = useState<"images" | "videos">("images");
   const [expandedMedia, setExpandedMedia] = useState(false);
   const [lightbox, setLightbox] = useState<{ src: string; title: string } | null>(null);
-  const [videoLightbox, setVideoLightbox] = useState<(typeof videoMedia)[number] | null>(null);
+  const [videoLightbox, setVideoLightbox] = useState<VideoCardItem | null>(null);
+  const managedVideosQuery = trpc.videos.list.useQuery(undefined, { retry: false });
+  const managedVideos: VideoCardItem[] = managedVideosQuery.data?.map(video => ({
+    id: video.id,
+    title: video.title,
+    category: video.category,
+    src: video.src,
+  })) ?? [];
+  const publicVideoItems = managedVideos.length > 0 ? managedVideos : videoMedia;
 
   useEffect(() => {
     const sections = navItems.map((item) => document.querySelector(item.href)).filter(Boolean) as Element[];
@@ -213,7 +231,7 @@ export default function Home() {
           <div className="media-library" id="media">
             <div className="media-library-head"><div><div className="section-index">04 <span>/</span> hình ảnh & video</div><h3>Hình ảnh &amp; Video</h3></div><button className="media-toggle" type="button" onClick={toggleMedia}>{expandedMedia ? "Thu nhỏ" : "Xem toàn bộ"} <ChevronRight className={expandedMedia ? "icon-rotated" : ""} size={18} /></button></div>
             <div className="media-tabs" role="tablist" aria-label="Chọn loại tư liệu"><button className={mediaTab === "images" ? "is-active" : ""} type="button" onClick={() => setMediaTab("images")}>Ảnh</button><button className={mediaTab === "videos" ? "is-active" : ""} type="button" onClick={() => setMediaTab("videos")}>Video</button></div>
-            {mediaTab === "images" ? <div className={`expanded-gallery ${expandedMedia ? "is-expanded" : ""}`}>{galleryItems.map((item) => { const src = siteAsset(item.src); return <figure key={`gallery-${item.title}-${item.id}`}><button className="gallery-image-button" type="button" onClick={() => setLightbox({ src, title: item.title })}><img src={src} alt={item.title} /><span className="gallery-zoom">Xem toàn màn hình</span></button><figcaption>{item.title}</figcaption></figure>; })}</div> : <div className={`video-gallery ${expandedMedia ? "is-expanded" : ""}`}>{videoMedia.length > 0 ? videoMedia.map((item) => <article className="video-card" key={item.id}><div className="video-frame"><video controls preload="metadata" poster={item.poster ? siteAsset(item.poster) : undefined}><source src={siteAsset(item.src)} /></video><button className="video-fullscreen" type="button" aria-label="Mở video lớn" onClick={() => setVideoLightbox(item)}><Maximize2 size={17} /><span>Mở lớn</span></button></div><strong>{item.title}</strong><span>{item.category}</span></article>) : videoTopics.map((topic) => <article className="video-placeholder" key={topic}><div className="video-placeholder-icon"><Play size={18} fill="currentColor" /></div><div><strong>{topic}</strong><span>Video sẽ được bổ sung vào thư viện này</span></div></article>)}</div>}
+            {mediaTab === "images" ? <div className={`expanded-gallery ${expandedMedia ? "is-expanded" : ""}`}>{galleryItems.map((item) => { const src = siteAsset(item.src); return <figure key={`gallery-${item.title}-${item.id}`}><button className="gallery-image-button" type="button" onClick={() => setLightbox({ src, title: item.title })}><img src={src} alt={item.title} /><span className="gallery-zoom">Xem toàn màn hình</span></button><figcaption>{item.title}</figcaption></figure>; })}</div> : <div className={`video-gallery ${expandedMedia ? "is-expanded" : ""}`}>{publicVideoItems.length > 0 ? publicVideoItems.map((item) => <article className="video-card" key={item.id}><div className="video-frame"><video controls preload="metadata" poster={item.poster ? siteAsset(item.poster) : undefined}><source src={item.src.startsWith("/") ? siteAsset(item.src) : item.src} /></video><button className="video-fullscreen" type="button" aria-label="Mở video lớn" onClick={() => setVideoLightbox(item)}><Maximize2 size={17} /><span>Mở lớn</span></button></div><strong>{item.title}</strong><span>{item.category}</span></article>) : videoTopics.map((topic) => <article className="video-placeholder" key={topic}><div className="video-placeholder-icon"><Play size={18} fill="currentColor" /></div><div><strong>{topic}</strong><span>Video sẽ được bổ sung vào thư viện này</span></div></article>)}</div>}
           </div>
           <div className="experience-extras" id="hoat-dong"><div className="section-index">05 <span>/</span> hoạt động khác</div><div className="experience-extras-grid">{experienceExtras.map((item, index) => <div className="experience-extra" key={item}><span>0{index + 1}</span><p>{item}</p></div>)}</div></div>
         </section>
@@ -228,7 +246,7 @@ export default function Home() {
 
       <footer className="site-footer"><div className="footer-top"><a className="wordmark footer-wordmark" href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }}><span className="wordmark-mark">PL</span><span className="wordmark-copy"><strong>Phan Lương</strong><em>mc / actor</em></span></a><span className="footer-role">MC · DIỄN VIÊN · NHÀ HÁT KỊCH HÀ NỘI</span></div><div className="footer-bottom"><span>© 2026 Phan Đình Lương</span><span>Made with intention in Hà Nội</span><a href="#top" onClick={(event) => { event.preventDefault(); scrollToId("#top"); }}>Lên đầu trang <ArrowUpRight size={14} /></a></div></footer>
       {lightbox && <div className="lightbox" role="dialog" aria-modal="true" aria-label={lightbox.title} onClick={() => setLightbox(null)}><button type="button" className="lightbox-close" aria-label="Đóng ảnh" onClick={() => setLightbox(null)}><X size={26} /></button><img src={lightbox.src} alt={lightbox.title} onClick={(event) => event.stopPropagation()} /><p>{lightbox.title}</p></div>}
-      {videoLightbox && <div className="lightbox video-lightbox" role="dialog" aria-modal="true" aria-label={videoLightbox.title} onClick={() => setVideoLightbox(null)}><button type="button" className="lightbox-close" aria-label="Đóng video" onClick={() => setVideoLightbox(null)}><X size={26} /></button><video controls autoPlay playsInline poster={videoLightbox.poster ? siteAsset(videoLightbox.poster) : undefined} onClick={(event) => event.stopPropagation()}><source src={siteAsset(videoLightbox.src)} /></video><p>{videoLightbox.title}</p></div>}
+      {videoLightbox && <div className="lightbox video-lightbox" role="dialog" aria-modal="true" aria-label={videoLightbox.title} onClick={() => setVideoLightbox(null)}><button type="button" className="lightbox-close" aria-label="Đóng video" onClick={() => setVideoLightbox(null)}><X size={26} /></button><video controls autoPlay playsInline poster={videoLightbox.poster ? siteAsset(videoLightbox.poster) : undefined} onClick={(event) => event.stopPropagation()}><source src={videoLightbox.src.startsWith("/") ? siteAsset(videoLightbox.src) : videoLightbox.src} /></video><p>{videoLightbox.title}</p></div>}
     </div>
   );
 }

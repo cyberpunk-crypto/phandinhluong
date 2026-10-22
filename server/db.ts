@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, InsertVideo, users, videos } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -88,4 +88,44 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function listPublishedVideos() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db
+    .select()
+    .from(videos)
+    .where(eq(videos.isPublished, 1))
+    .orderBy(desc(videos.createdAt));
+}
+
+export async function listAllVideos() {
+  const db = await getDb();
+  if (!db) return [];
+
+  return db.select().from(videos).orderBy(desc(videos.createdAt));
+}
+
+export async function createVideo(video: InsertVideo) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  const result = await db.insert(videos).values(video);
+  const insertedId = Number((result as { insertId?: number }).insertId);
+  if (!insertedId) throw new Error("Video insert did not return an id");
+
+  const inserted = await db.select().from(videos).where(eq(videos.id, insertedId)).limit(1);
+  return inserted[0];
+}
+
+export async function updateVideo(
+  id: number,
+  values: Partial<Pick<InsertVideo, "title" | "category" | "isPublished">>,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+
+  await db.update(videos).set(values).where(eq(videos.id, id));
+  const updated = await db.select().from(videos).where(eq(videos.id, id)).limit(1);
+  return updated[0];
+}
