@@ -19,6 +19,7 @@ import { eventMedia, extraMedia, partnerBoardImage, partnerUnits, profileGallery
 
 const siteAsset = (path: string) => {
   const base = import.meta.env.BASE_URL;
+  if (path.startsWith(base)) return path;
   return `${base}${path.replace(/^\/+/, "")}`;
 };
 
