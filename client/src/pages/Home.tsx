@@ -18,7 +18,7 @@ import {
 import { eventMedia, extraMedia, partnerBoardImage, partnerUnits, profileGallery, videoMedia } from "../content/media";
 
 const siteAsset = (path: string) => {
-  const base = typeof window !== "undefined" && window.location.pathname.startsWith("/phandinhluong") ? "/phandinhluong/" : "/";
+  const base = import.meta.env.BASE_URL;
   return `${base}${path.replace(/^\/+/, "")}`;
 };
 
