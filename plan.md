@@ -2,21 +2,21 @@
 
 ## Phạm vi triển khai
 - Giữ landing page portfolio tiếng Việt theo phong cách Warm Architectural hiện tại, với 6 mục: Câu chuyện, Năng lực, Dấu ấn, Hình ảnh & Video, Hoạt động khác và Kết nối.
-- Chuyển phần video từ danh sách tĩnh sang nguồn dữ liệu động từ database; giữ video mẫu hiện có làm fallback để landing page không bị trống khi database chưa có nội dung.
+- Chuyển phần ảnh và video từ danh sách tĩnh sang nguồn dữ liệu động từ database; giữ media mẫu hiện có làm fallback để landing page không bị trống khi database chưa có nội dung.
 - Thêm route `/admin/videos` dành cho chủ website. Người dùng phải đăng nhập Manus OAuth và có role `admin`; người dùng thường không được xem hoặc thao tác quản trị.
-- Cho phép admin chọn tệp video, nhập tiêu đề và danh mục, upload qua server vào Manus Storage, lưu metadata và storage key vào MySQL, xem trạng thái công khai/lưu trữ và ẩn/hiện video.
+- Cho phép admin chọn tệp ảnh hoặc video, nhập tiêu đề và danh mục, upload qua server vào Manus Storage, lưu metadata và storage key vào MySQL, xem trạng thái công khai/lưu trữ và ẩn/hiện media.
 
 ## Thiết kế và trải nghiệm
 - Giữ bảng màu giấy ấm, terracotta, xanh mực và olive; khu vực admin dùng cùng ngôn ngữ hình ảnh nhưng ưu tiên rõ ràng, thao tác nhanh và không thêm hình minh họa trang trí.
 - Trang admin có tiêu đề “Quản trị video”, thẻ trạng thái đăng nhập, form upload rõ ràng, giới hạn/định dạng file được nói ngay cạnh input và danh sách video đã tải lên.
-- Gallery công khai hiển thị video đã publish từ database, vuông, có poster nếu có, tiêu đề/danh mục bên dưới và mở player lớn khi bấm.
+- Gallery công khai hiển thị ảnh đã publish trong tab Ảnh và video đã publish trong tab Video; video vuông, có tiêu đề/danh mục bên dưới và mở player lớn khi bấm.
 
 ## Kiến trúc
-- `drizzle/schema.ts`: thêm bảng `videos` với title, category, storageKey, contentType, fileSize, createdByOpenId, isPublished và timestamps.
+- `drizzle/schema.ts`: bảng `videos` lưu cả media `image`/`video` với kind, title, category, storageKey, contentType, fileSize, createdByOpenId, isPublished và timestamps.
 - `server/db.ts`: thêm truy vấn list public/admin, insert video và cập nhật trạng thái/metadata.
 - `server/routers.ts`: public query `videos.list`; admin procedures `admin.videos.list`, `create`, `update` và `archive` dùng `adminProcedure`.
 - `server/storage.ts`: tái sử dụng `storagePut`, không đưa API key lên browser; browser gửi nội dung video tới server theo base64 trong giới hạn 50 MB body hiện tại.
-- `client/src/pages/AdminVideos.tsx`: Manus OAuth state, form upload và danh sách quản lý.
+- `client/src/pages/AdminVideos.tsx`: Manus OAuth state, form upload ảnh/video và danh sách quản lý.
 - `client/src/pages/Home.tsx`: query video động và fallback sang `videoMedia` tĩnh.
 - `client/src/App.tsx`: đăng ký route admin và route manifest `/manus-routes.json`.
 

@@ -357,7 +357,7 @@ blockquote { margin: 24px 0 32px; font-family: var(--serif); font-size: clamp(41
 .admin-video-row:hover { border-color: var(--line); }
 .admin-video-row.is-archived { opacity: .58; }
 .admin-video-preview { aspect-ratio: 1; overflow: hidden; background: var(--paper-deep); }
-.admin-video-preview video { width: 100%; height: 100%; display: block; object-fit: cover; }
+.admin-video-preview video, .admin-video-preview img { width: 100%; height: 100%; display: block; object-fit: cover; }
 .admin-video-fields { display: grid; gap: 10px; }
 .admin-video-fields label { display: grid; grid-template-columns: 70px 1fr; gap: 12px; align-items: center; }
 .admin-video-fields label > span { color: var(--muted); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; }

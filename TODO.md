@@ -8,13 +8,13 @@
 - [x] Marquee lĩnh vực chạy liên tục không khoảng trắng; thư viện ảnh có trạng thái mở rộng/thu nhỏ.
 - [x] Nhập ảnh hồ sơ, ảnh sự kiện, video VTVcab và partner board; partner board đặt lớn ở trên danh sách các đơn vị hợp tác.
 
-## Quản trị video full-stack
+## Quản trị media full-stack
 - [x] Người sở hữu mở `/admin/videos`, đăng nhập bằng Manus OAuth và chỉ user có role `admin` mới nhìn thấy form/danh sách quản trị; user thường nhận thông báo không có quyền.
-- [x] Admin upload được file video hợp lệ với tiêu đề và danh mục; giao diện nêu rõ giới hạn 50 MB và định dạng video; trạng thái đang tải và lỗi/thành công hiển thị rõ.
-- [x] Server nhận file, kiểm tra quyền admin, lưu bytes qua Manus Storage, không gửi API key xuống browser, sau đó lưu title/category/storage key/content type/file size/createdByOpenId vào database.
-- [x] Landing page gọi query public để hiển thị các video `isPublished`; nếu chưa có bản ghi database thì vẫn hiển thị video tĩnh hiện có.
-- [x] Admin xem danh sách video đã upload, biết trạng thái công khai/lưu trữ, có thể cập nhật tiêu đề/danh mục/trạng thái và archive mềm; archive không giả vờ xóa object storage.
-- [x] Database migration additive cho bảng videos chạy được trên database managed hiện tại; `/api/health` tiếp tục trả 2xx.
+- [x] Admin upload được file ảnh hoặc video với tiêu đề và danh mục; giao diện nêu rõ giới hạn ảnh 15 MB, video 50 MB và trạng thái đang tải/lỗi/thành công.
+- [x] Server nhận file ảnh/video, kiểm tra quyền admin, lưu bytes qua Manus Storage, không gửi API key xuống browser, sau đó lưu kind/title/category/storage key/content type/file size/createdByOpenId vào database.
+- [x] Landing page gọi query public, đưa media `image` vào tab Ảnh và media `video` vào tab Video; nếu chưa có bản ghi database thì vẫn hiển thị media tĩnh hiện có.
+- [x] Admin xem danh sách ảnh/video đã upload, biết trạng thái công khai/lưu trữ, có thể cập nhật tiêu đề/danh mục/trạng thái và archive mềm; archive không giả vờ xóa object storage.
+- [x] Database migration additive thêm cột phân loại media cho bảng videos trên database managed hiện tại; `/api/health` tiếp tục trả 2xx.
 - [x] Có `public/manus-routes.json` khai báo `/` và `/admin/videos`.
 
 ## Kiểm tra và bàn giao

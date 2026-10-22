@@ -29,6 +29,7 @@ export const videos = mysqlTable("videos", {
   id: int("id").autoincrement().primaryKey(),
   title: varchar("title", { length: 255 }).notNull(),
   category: varchar("category", { length: 120 }).notNull(),
+  kind: mysqlEnum("kind", ["image", "video"]).default("video").notNull(),
   storageKey: varchar("storageKey", { length: 512 }).notNull().unique(),
   contentType: varchar("contentType", { length: 120 }).notNull(),
   fileSize: int("fileSize").notNull(),

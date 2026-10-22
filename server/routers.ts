@@ -7,12 +7,14 @@ import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 
 const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 
 function toPublicVideo(video: Awaited<ReturnType<typeof db.listPublishedVideos>>[number]) {
   return {
     id: String(video.id),
     title: video.title,
     category: video.category,
+    kind: video.kind,
     src: `/manus-storage/${video.storageKey}`,
     contentType: video.contentType,
     fileSize: video.fileSize,
@@ -63,20 +65,23 @@ export const appRouter = router({
           title: z.string().trim().min(1).max(255),
           category: z.string().trim().min(1).max(120),
           fileName: z.string().trim().min(1).max(255),
-          contentType: z.string().regex(/^video\//, "Chỉ nhận tệp video"),
+          kind: z.enum(["image", "video"]),
+          contentType: z.string().regex(/^(video|image)\//, "Chỉ nhận tệp ảnh hoặc video"),
           data: z.string().min(1),
         }))
         .mutation(async ({ ctx, input }) => {
           const bytes = Buffer.from(input.data, "base64");
-          if (bytes.byteLength > MAX_VIDEO_BYTES) {
-            throw new Error("Video vượt quá giới hạn 50 MB");
+          const maxBytes = input.kind === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
+          if (bytes.byteLength > maxBytes) {
+            throw new Error(input.kind === "image" ? "Ảnh vượt quá giới hạn 15 MB" : "Video vượt quá giới hạn 50 MB");
           }
 
-          const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-160) || "video.mp4";
-          const uploaded = await storagePut(`videos/${safeName}`, bytes, input.contentType);
+          const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-160) || (input.kind === "image" ? "image.jpg" : "video.mp4");
+          const uploaded = await storagePut(`media/${input.kind}s/${safeName}`, bytes, input.contentType);
           const record = await db.createVideo({
             title: input.title,
             category: input.category,
+            kind: input.kind,
             storageKey: uploaded.key,
             contentType: input.contentType,
             fileSize: bytes.byteLength,
