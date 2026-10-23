@@ -19,12 +19,31 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function uploadToStorage(uploadUrl: string, file: File, onProgress: (percent: number) => void) {
+  return new Promise<void>((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open("PUT", uploadUrl);
+    request.setRequestHeader("Content-Type", file.type);
+    request.upload.onprogress = event => {
+      if (event.lengthComputable) onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+    };
+    request.onload = () => {
+      if (request.status >= 200 && request.status < 300) resolve();
+      else reject(new Error(`Storage từ chối upload (${request.status})`));
+    };
+    request.onerror = () => reject(new Error("Kết nối upload bị gián đoạn. Hãy thử lại với cùng file."));
+    request.onabort = () => reject(new Error("Upload đã bị hủy trước khi hoàn tất."));
+    request.send(file);
+  });
+}
+
 export default function AdminVideos() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("MC sự kiện");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedKind, setSelectedKind] = useState<MediaKind | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [drafts, setDrafts] = useState<Record<string, MediaDraft>>({});
 
   const meQuery = trpc.auth.me.useQuery();
@@ -41,6 +60,7 @@ export default function AdminVideos() {
       setTitle("");
       setSelectedFile(null);
       setSelectedKind(null);
+      setUploadProgress(0);
       if (fileInput.current) fileInput.current.value = "";
       await utils.admin.videos.list.invalidate();
       await utils.videos.list.invalidate();
@@ -101,19 +121,14 @@ export default function AdminVideos() {
       return;
     }
     try {
+      setUploadProgress(1);
       const prepared = await prepareUploadMutation.mutateAsync({
         fileName: selectedFile.name,
         kind: selectedKind,
         contentType: selectedFile.type,
       });
-      const uploadResponse = await fetch(prepared.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": selectedFile.type },
-        body: selectedFile,
-      });
-      if (!uploadResponse.ok) {
-        throw new Error(`Storage từ chối upload (${uploadResponse.status})`);
-      }
+      await uploadToStorage(prepared.uploadUrl, selectedFile, setUploadProgress);
+      setUploadProgress(100);
       await createMutation.mutateAsync({
         title: title.trim() || selectedFile.name.replace(/\.[^/.]+$/, ""),
         category: category.trim() || (selectedKind === "image" ? "Hình ảnh sự kiện" : "MC sự kiện"),
@@ -124,6 +139,7 @@ export default function AdminVideos() {
         fileSize: selectedFile.size,
       });
     } catch (error) {
+      setUploadProgress(0);
       toast.error(error instanceof Error ? error.message : "Không thể đọc file tư liệu");
     }
   };
@@ -182,7 +198,7 @@ export default function AdminVideos() {
             <label className="admin-field"><span>Tiêu đề</span><input value={title} onChange={event => setTitle(event.target.value)} placeholder="Ví dụ: Hoa hậu Du lịch Dân tộc 2025" maxLength={255} /></label>
             <label className="admin-field"><span>Danh mục</span><input value={category} onChange={event => setCategory(event.target.value)} placeholder="Hình ảnh sự kiện, MC truyền hình…" maxLength={120} /></label>
             <label className="admin-file-field"><span>File ảnh hoặc video</span><input ref={fileInput} type="file" accept="image/*,video/*" onChange={event => onSelectFile(event.target.files?.[0])} /><span className="admin-file-drop">{selectedKind === "image" ? <ImageIcon size={19} /> : <Film size={19} />}<strong>{selectedFile ? selectedFile.name : "Chọn ảnh hoặc video từ máy"}</strong><small>{selectedFile ? `${selectedKind === "image" ? "Ảnh" : "Video"} · ${formatBytes(selectedFile.size)}` : "Ảnh hoặc video tối đa 2 GB"}</small></span></label>
-            <button className="button button-dark admin-submit" type="submit" disabled={prepareUploadMutation.isPending || createMutation.isPending}>{prepareUploadMutation.isPending || createMutation.isPending ? "Đang tải lên…" : <><Upload size={16} /> Tải lên thư viện</>}</button>
+            <button className="button button-dark admin-submit" type="submit" disabled={prepareUploadMutation.isPending || createMutation.isPending}>{prepareUploadMutation.isPending || createMutation.isPending ? `Đang tải lên… ${uploadProgress}%` : <><Upload size={16} /> Tải lên thư viện</>}</button>
           </form>
           <p className="admin-storage-note">Ảnh và video được lưu trong Manus Storage. API key và storage key không được đưa xuống trình duyệt.</p>
         </section>
