@@ -11,9 +11,9 @@ import { serveStatic, setupVite } from "./vite";
 async function startServer() {
   const app = express();
   const server = createServer(app);
-  // Base64 expands a 500 MB file to roughly 667 MB; leave headroom for JSON overhead.
-  app.use(express.json({ limit: "720mb" }));
-  app.use(express.urlencoded({ limit: "720mb", extended: true }));
+  // Base64 expands a 2 GB file to roughly 2.67 GB; leave headroom for JSON overhead.
+  app.use(express.json({ limit: "3gb" }));
+  app.use(express.urlencoded({ limit: "3gb", extended: true }));
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
   app.get("/api/platform/config.js", (_req, res) => {
     res.set("Cache-Control", "no-store").type("application/javascript").send(publicPlatformScript());

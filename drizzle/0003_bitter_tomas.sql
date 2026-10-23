@@ -1,0 +1,1 @@
+ALTER TABLE `videos` MODIFY COLUMN `fileSize` bigint NOT NULL;

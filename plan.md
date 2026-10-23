@@ -8,14 +8,14 @@
 
 ## Thiết kế và trải nghiệm
 - Giữ bảng màu giấy ấm, terracotta, xanh mực và olive; khu vực admin dùng cùng ngôn ngữ hình ảnh nhưng ưu tiên rõ ràng, thao tác nhanh và không thêm hình minh họa trang trí.
-- Trang admin có tiêu đề “Quản trị video”, thẻ trạng thái đăng nhập, form upload rõ ràng, giới hạn 500 MB/định dạng file được nói ngay cạnh input và danh sách video đã tải lên.
+- Trang admin có tiêu đề “Quản trị video”, thẻ trạng thái đăng nhập, form upload rõ ràng, giới hạn 2 GB/định dạng file được nói ngay cạnh input và danh sách video đã tải lên.
 - Gallery công khai hiển thị ảnh đã publish trong tab Ảnh và video đã publish trong tab Video; video vuông, có tiêu đề/danh mục bên dưới và mở player lớn khi bấm.
 
 ## Kiến trúc
-- `drizzle/schema.ts`: bảng `videos` lưu cả media `image`/`video` với kind, title, category, storageKey, contentType, fileSize, createdByOpenId, isPublished và timestamps.
+- `drizzle/schema.ts`: bảng `videos` lưu cả media `image`/`video` với kind, title, category, storageKey, contentType, fileSize kiểu BIGINT, createdByOpenId, isPublished và timestamps.
 - `server/db.ts`: thêm truy vấn list public/admin, insert video và cập nhật trạng thái/metadata.
 - `server/routers.ts`: public query `videos.list`; admin procedures `admin.videos.list`, `create`, `update` và `archive` dùng `adminProcedure`.
-- `server/storage.ts`: tái sử dụng `storagePut`, không đưa API key lên browser; browser gửi nội dung ảnh/video theo base64 với giới hạn file 500 MB và body request có headroom tương ứng.
+- `server/storage.ts`: tái sử dụng `storagePut`, không đưa API key lên browser; browser gửi nội dung ảnh/video theo base64 với giới hạn file 2 GB và body request 3 GB có headroom tương ứng.
 - `client/src/pages/AdminVideos.tsx`: Manus OAuth state, form upload ảnh/video và danh sách quản lý.
 - `client/src/pages/Home.tsx`: query video động và fallback sang `videoMedia` tĩnh.
 - `client/src/App.tsx`: đăng ký route admin và route manifest `/manus-routes.json`.
