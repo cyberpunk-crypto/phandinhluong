@@ -5,8 +5,7 @@ import { Link } from "wouter";
 import { startLogin } from "../const";
 import { trpc } from "../lib/trpc";
 
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
-const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+const MAX_MEDIA_BYTES = 500 * 1024 * 1024;
 type MediaKind = "image" | "video";
 
 type MediaDraft = {
@@ -97,9 +96,8 @@ export default function AdminVideos() {
       if (fileInput.current) fileInput.current.value = "";
       return;
     }
-    const maxBytes = kind === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
-    if (file.size > maxBytes) {
-      toast.error(kind === "image" ? "Ảnh cần nhỏ hơn hoặc bằng 15 MB" : "Video cần nhỏ hơn hoặc bằng 50 MB");
+    if (file.size > MAX_MEDIA_BYTES) {
+      toast.error("Ảnh hoặc video cần nhỏ hơn hoặc bằng 500 MB");
       if (fileInput.current) fileInput.current.value = "";
       return;
     }
@@ -181,7 +179,7 @@ export default function AdminVideos() {
           <form onSubmit={handleUpload}>
             <label className="admin-field"><span>Tiêu đề</span><input value={title} onChange={event => setTitle(event.target.value)} placeholder="Ví dụ: Hoa hậu Du lịch Dân tộc 2025" maxLength={255} /></label>
             <label className="admin-field"><span>Danh mục</span><input value={category} onChange={event => setCategory(event.target.value)} placeholder="Hình ảnh sự kiện, MC truyền hình…" maxLength={120} /></label>
-            <label className="admin-file-field"><span>File ảnh hoặc video</span><input ref={fileInput} type="file" accept="image/*,video/*" onChange={event => onSelectFile(event.target.files?.[0])} /><span className="admin-file-drop">{selectedKind === "image" ? <ImageIcon size={19} /> : <Film size={19} />}<strong>{selectedFile ? selectedFile.name : "Chọn ảnh hoặc video từ máy"}</strong><small>{selectedFile ? `${selectedKind === "image" ? "Ảnh" : "Video"} · ${formatBytes(selectedFile.size)}` : "Ảnh tối đa 15 MB · Video tối đa 50 MB"}</small></span></label>
+            <label className="admin-file-field"><span>File ảnh hoặc video</span><input ref={fileInput} type="file" accept="image/*,video/*" onChange={event => onSelectFile(event.target.files?.[0])} /><span className="admin-file-drop">{selectedKind === "image" ? <ImageIcon size={19} /> : <Film size={19} />}<strong>{selectedFile ? selectedFile.name : "Chọn ảnh hoặc video từ máy"}</strong><small>{selectedFile ? `${selectedKind === "image" ? "Ảnh" : "Video"} · ${formatBytes(selectedFile.size)}` : "Ảnh hoặc video tối đa 500 MB"}</small></span></label>
             <button className="button button-dark admin-submit" type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? "Đang tải lên…" : <><Upload size={16} /> Tải lên thư viện</>}</button>
           </form>
           <p className="admin-storage-note">Ảnh và video được lưu trong Manus Storage. API key và storage key không được đưa xuống trình duyệt.</p>

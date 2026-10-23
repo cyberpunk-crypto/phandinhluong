@@ -6,8 +6,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
-const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
+const MAX_MEDIA_BYTES = 500 * 1024 * 1024;
 
 function toPublicVideo(video: Awaited<ReturnType<typeof db.listPublishedVideos>>[number]) {
   return {
@@ -71,9 +70,8 @@ export const appRouter = router({
         }))
         .mutation(async ({ ctx, input }) => {
           const bytes = Buffer.from(input.data, "base64");
-          const maxBytes = input.kind === "image" ? MAX_IMAGE_BYTES : MAX_VIDEO_BYTES;
-          if (bytes.byteLength > maxBytes) {
-            throw new Error(input.kind === "image" ? "Ảnh vượt quá giới hạn 15 MB" : "Video vượt quá giới hạn 50 MB");
+          if (bytes.byteLength > MAX_MEDIA_BYTES) {
+            throw new Error("Ảnh hoặc video vượt quá giới hạn 500 MB");
           }
 
           const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-160) || (input.kind === "image" ? "image.jpg" : "video.mp4");

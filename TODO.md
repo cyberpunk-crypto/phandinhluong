@@ -10,7 +10,7 @@
 
 ## Quản trị media full-stack
 - [x] Người sở hữu mở `/admin/videos`, đăng nhập bằng Manus OAuth và chỉ user có role `admin` mới nhìn thấy form/danh sách quản trị; user thường nhận thông báo không có quyền.
-- [x] Admin upload được file ảnh hoặc video với tiêu đề và danh mục; giao diện nêu rõ giới hạn ảnh 15 MB, video 50 MB và trạng thái đang tải/lỗi/thành công.
+- [x] Admin upload được file ảnh hoặc video tối đa 500 MB với tiêu đề và danh mục; giao diện nêu rõ giới hạn 500 MB và trạng thái đang tải/lỗi/thành công.
 - [x] Server nhận file ảnh/video, kiểm tra quyền admin, lưu bytes qua Manus Storage, không gửi API key xuống browser, sau đó lưu kind/title/category/storage key/content type/file size/createdByOpenId vào database.
 - [x] Landing page gọi query public, đưa media `image` vào tab Ảnh và media `video` vào tab Video; nếu chưa có bản ghi database thì vẫn hiển thị media tĩnh hiện có.
 - [x] Admin xem danh sách ảnh/video đã upload, biết trạng thái công khai/lưu trữ, có thể cập nhật tiêu đề/danh mục/trạng thái và archive mềm; archive không giả vờ xóa object storage.
