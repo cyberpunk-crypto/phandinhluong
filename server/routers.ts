@@ -4,7 +4,7 @@ import * as db from "./db";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, publicProcedure, router } from "./_core/trpc";
-import { storagePut } from "./storage";
+import { storagePreparePut } from "./storage";
 
 const MAX_MEDIA_BYTES = 2 * 1024 * 1024 * 1024;
 
@@ -59,6 +59,17 @@ export const appRouter = router({
         }));
       }),
 
+      prepareUpload: adminProcedure
+        .input(z.object({
+          fileName: z.string().trim().min(1).max(255),
+          kind: z.enum(["image", "video"]),
+          contentType: z.string().regex(/^(video|image)\//, "Chỉ nhận tệp ảnh hoặc video"),
+        }))
+        .mutation(async ({ input }) => {
+          const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-160) || (input.kind === "image" ? "image.jpg" : "video.mp4");
+          return storagePreparePut(`media/${input.kind}s/${safeName}`);
+        }),
+
       create: adminProcedure
         .input(z.object({
           title: z.string().trim().min(1).max(255),
@@ -66,23 +77,17 @@ export const appRouter = router({
           fileName: z.string().trim().min(1).max(255),
           kind: z.enum(["image", "video"]),
           contentType: z.string().regex(/^(video|image)\//, "Chỉ nhận tệp ảnh hoặc video"),
-          data: z.string().min(1),
+          storageKey: z.string().regex(/^media\/(images|videos)\/[a-zA-Z0-9._-]+$/),
+          fileSize: z.number().int().positive().max(MAX_MEDIA_BYTES),
         }))
         .mutation(async ({ ctx, input }) => {
-          const bytes = Buffer.from(input.data, "base64");
-          if (bytes.byteLength > MAX_MEDIA_BYTES) {
-            throw new Error("Ảnh hoặc video vượt quá giới hạn 2 GB");
-          }
-
-          const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]+/g, "-").slice(-160) || (input.kind === "image" ? "image.jpg" : "video.mp4");
-          const uploaded = await storagePut(`media/${input.kind}s/${safeName}`, bytes, input.contentType);
           const record = await db.createVideo({
             title: input.title,
             category: input.category,
             kind: input.kind,
-            storageKey: uploaded.key,
+            storageKey: input.storageKey,
             contentType: input.contentType,
-            fileSize: bytes.byteLength,
+            fileSize: input.fileSize,
             createdByOpenId: ctx.user.openId,
             isPublished: 1,
           });
@@ -90,7 +95,7 @@ export const appRouter = router({
           return {
             ...record,
             id: String(record.id),
-            src: uploaded.url,
+            src: `/manus-storage/${input.storageKey}`,
             isPublished: true,
           };
         }),

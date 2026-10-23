@@ -19,18 +19,6 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function readFileAsBase64(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = typeof reader.result === "string" ? reader.result : "";
-      resolve(result.split(",")[1] ?? "");
-    };
-    reader.onerror = () => reject(new Error("Không thể đọc file tư liệu"));
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function AdminVideos() {
   const fileInput = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
@@ -46,6 +34,7 @@ export default function AdminVideos() {
     retry: false,
   });
   const utils = trpc.useUtils();
+  const prepareUploadMutation = trpc.admin.videos.prepareUpload.useMutation();
   const createMutation = trpc.admin.videos.create.useMutation({
     onSuccess: async () => {
       toast.success("Đã tải tư liệu lên thư viện");
@@ -112,14 +101,27 @@ export default function AdminVideos() {
       return;
     }
     try {
-      const data = await readFileAsBase64(selectedFile);
-      createMutation.mutate({
+      const prepared = await prepareUploadMutation.mutateAsync({
+        fileName: selectedFile.name,
+        kind: selectedKind,
+        contentType: selectedFile.type,
+      });
+      const uploadResponse = await fetch(prepared.uploadUrl, {
+        method: "PUT",
+        headers: { "Content-Type": selectedFile.type },
+        body: selectedFile,
+      });
+      if (!uploadResponse.ok) {
+        throw new Error(`Storage từ chối upload (${uploadResponse.status})`);
+      }
+      await createMutation.mutateAsync({
         title: title.trim() || selectedFile.name.replace(/\.[^/.]+$/, ""),
         category: category.trim() || (selectedKind === "image" ? "Hình ảnh sự kiện" : "MC sự kiện"),
         fileName: selectedFile.name,
         kind: selectedKind,
         contentType: selectedFile.type,
-        data,
+        storageKey: prepared.key,
+        fileSize: selectedFile.size,
       });
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Không thể đọc file tư liệu");
@@ -180,7 +182,7 @@ export default function AdminVideos() {
             <label className="admin-field"><span>Tiêu đề</span><input value={title} onChange={event => setTitle(event.target.value)} placeholder="Ví dụ: Hoa hậu Du lịch Dân tộc 2025" maxLength={255} /></label>
             <label className="admin-field"><span>Danh mục</span><input value={category} onChange={event => setCategory(event.target.value)} placeholder="Hình ảnh sự kiện, MC truyền hình…" maxLength={120} /></label>
             <label className="admin-file-field"><span>File ảnh hoặc video</span><input ref={fileInput} type="file" accept="image/*,video/*" onChange={event => onSelectFile(event.target.files?.[0])} /><span className="admin-file-drop">{selectedKind === "image" ? <ImageIcon size={19} /> : <Film size={19} />}<strong>{selectedFile ? selectedFile.name : "Chọn ảnh hoặc video từ máy"}</strong><small>{selectedFile ? `${selectedKind === "image" ? "Ảnh" : "Video"} · ${formatBytes(selectedFile.size)}` : "Ảnh hoặc video tối đa 2 GB"}</small></span></label>
-            <button className="button button-dark admin-submit" type="submit" disabled={createMutation.isPending}>{createMutation.isPending ? "Đang tải lên…" : <><Upload size={16} /> Tải lên thư viện</>}</button>
+            <button className="button button-dark admin-submit" type="submit" disabled={prepareUploadMutation.isPending || createMutation.isPending}>{prepareUploadMutation.isPending || createMutation.isPending ? "Đang tải lên…" : <><Upload size={16} /> Tải lên thư viện</>}</button>
           </form>
           <p className="admin-storage-note">Ảnh và video được lưu trong Manus Storage. API key và storage key không được đưa xuống trình duyệt.</p>
         </section>
