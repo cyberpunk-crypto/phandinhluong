@@ -19,17 +19,31 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function uploadToStorage(uploadUrl: string, file: File, onProgress: (percent: number) => void) {
+function uploadToServer(
+  file: File,
+  metadata: { title: string; category: string; kind: MediaKind },
+  onProgress: (percent: number) => void,
+) {
   return new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
-    request.open("PUT", uploadUrl);
-    request.setRequestHeader("Content-Type", file.type);
+    request.open("POST", "/api/admin/media-upload");
+    request.withCredentials = true;
+    request.setRequestHeader("Content-Type", "application/octet-stream");
+    request.setRequestHeader("X-File-Name", encodeURIComponent(file.name));
+    request.setRequestHeader("X-Media-Kind", metadata.kind);
+    request.setRequestHeader("X-Content-Type", file.type);
+    request.setRequestHeader("X-Title", encodeURIComponent(metadata.title));
+    request.setRequestHeader("X-Category", encodeURIComponent(metadata.category));
     request.upload.onprogress = event => {
       if (event.lengthComputable) onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
     };
     request.onload = () => {
       if (request.status >= 200 && request.status < 300) resolve();
-      else reject(new Error(`Storage từ chối upload (${request.status})`));
+      else {
+        let message = `Server từ chối upload (${request.status})`;
+        try { message = JSON.parse(request.responseText).error || message; } catch { /* keep fallback */ }
+        reject(new Error(message));
+      }
     };
     request.onerror = () => reject(new Error("Kết nối upload bị gián đoạn. Hãy thử lại với cùng file."));
     request.onabort = () => reject(new Error("Upload đã bị hủy trước khi hoàn tất."));
@@ -53,20 +67,7 @@ export default function AdminVideos() {
     retry: false,
   });
   const utils = trpc.useUtils();
-  const prepareUploadMutation = trpc.admin.videos.prepareUpload.useMutation();
-  const createMutation = trpc.admin.videos.create.useMutation({
-    onSuccess: async () => {
-      toast.success("Đã tải tư liệu lên thư viện");
-      setTitle("");
-      setSelectedFile(null);
-      setSelectedKind(null);
-      setUploadProgress(0);
-      if (fileInput.current) fileInput.current.value = "";
-      await utils.admin.videos.list.invalidate();
-      await utils.videos.list.invalidate();
-    },
-    onError: error => toast.error(error.message || "Không thể tải tư liệu lên"),
-  });
+  const [isUploading, setIsUploading] = useState(false);
   const updateMutation = trpc.admin.videos.update.useMutation({
     onSuccess: async () => {
       toast.success("Đã lưu thay đổi");
@@ -121,26 +122,26 @@ export default function AdminVideos() {
       return;
     }
     try {
+      setIsUploading(true);
       setUploadProgress(1);
-      const prepared = await prepareUploadMutation.mutateAsync({
-        fileName: selectedFile.name,
-        kind: selectedKind,
-        contentType: selectedFile.type,
-      });
-      await uploadToStorage(prepared.uploadUrl, selectedFile, setUploadProgress);
-      setUploadProgress(100);
-      await createMutation.mutateAsync({
+      await uploadToServer(selectedFile, {
         title: title.trim() || selectedFile.name.replace(/\.[^/.]+$/, ""),
         category: category.trim() || (selectedKind === "image" ? "Hình ảnh sự kiện" : "MC sự kiện"),
-        fileName: selectedFile.name,
         kind: selectedKind,
-        contentType: selectedFile.type,
-        storageKey: prepared.key,
-        fileSize: selectedFile.size,
-      });
+      }, setUploadProgress);
+      setUploadProgress(100);
+      toast.success("Đã tải tư liệu lên thư viện");
+      setTitle("");
+      setSelectedFile(null);
+      setSelectedKind(null);
+      if (fileInput.current) fileInput.current.value = "";
+      await utils.admin.videos.list.invalidate();
+      await utils.videos.list.invalidate();
     } catch (error) {
       setUploadProgress(0);
-      toast.error(error instanceof Error ? error.message : "Không thể đọc file tư liệu");
+      toast.error(error instanceof Error ? error.message : "Không thể tải file tư liệu");
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -198,7 +199,7 @@ export default function AdminVideos() {
             <label className="admin-field"><span>Tiêu đề</span><input value={title} onChange={event => setTitle(event.target.value)} placeholder="Ví dụ: Hoa hậu Du lịch Dân tộc 2025" maxLength={255} /></label>
             <label className="admin-field"><span>Danh mục</span><input value={category} onChange={event => setCategory(event.target.value)} placeholder="Hình ảnh sự kiện, MC truyền hình…" maxLength={120} /></label>
             <label className="admin-file-field"><span>File ảnh hoặc video</span><input ref={fileInput} type="file" accept="image/*,video/*" onChange={event => onSelectFile(event.target.files?.[0])} /><span className="admin-file-drop">{selectedKind === "image" ? <ImageIcon size={19} /> : <Film size={19} />}<strong>{selectedFile ? selectedFile.name : "Chọn ảnh hoặc video từ máy"}</strong><small>{selectedFile ? `${selectedKind === "image" ? "Ảnh" : "Video"} · ${formatBytes(selectedFile.size)}` : "Ảnh hoặc video tối đa 2 GB"}</small></span></label>
-            <button className="button button-dark admin-submit" type="submit" disabled={prepareUploadMutation.isPending || createMutation.isPending}>{prepareUploadMutation.isPending || createMutation.isPending ? `Đang tải lên… ${uploadProgress}%` : <><Upload size={16} /> Tải lên thư viện</>}</button>
+            <button className="button button-dark admin-submit" type="submit" disabled={isUploading}>{isUploading ? `Đang tải lên… ${uploadProgress}%` : <><Upload size={16} /> Tải lên thư viện</>}</button>
           </form>
           <p className="admin-storage-note">Ảnh và video được lưu trong Manus Storage. API key và storage key không được đưa xuống trình duyệt.</p>
         </section>
