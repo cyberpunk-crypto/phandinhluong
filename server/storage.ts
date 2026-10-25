@@ -2,6 +2,7 @@
 // Uploads via Forge Server presigned URL to S3 (PUT direct).
 // Downloads return /manus-storage/{key} paths served via 307 redirect.
 
+import { createReadStream } from "node:fs";
 import { ENV } from "./_core/env";
 
 function getForgeConfig() {
@@ -33,13 +34,9 @@ export async function storagePreparePut(
 ): Promise<{ key: string; uploadUrl: string; url: string }> {
   const { forgeUrl, forgeKey } = getForgeConfig();
   const key = appendHashSuffix(normalizeKey(relKey));
-
-  // Get a short-lived presigned PUT URL from Forge.
   const presignUrl = new URL("v1/storage/presign/put", forgeUrl + "/");
   presignUrl.searchParams.set("path", key);
-  const presignResp = await fetch(presignUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
+  const presignResp = await fetch(presignUrl, { headers: { Authorization: `Bearer ${forgeKey}` } });
 
   if (!presignResp.ok) {
     const msg = await presignResp.text().catch(() => presignResp.statusText);
@@ -57,21 +54,27 @@ export async function storagePut(
   contentType = "application/octet-stream",
 ): Promise<{ key: string; url: string }> {
   const { key, uploadUrl, url } = await storagePreparePut(relKey);
-  const blob =
-    typeof data === "string"
-      ? new Blob([data], { type: contentType })
-      : new Blob([data as any], { type: contentType });
+  const blob = typeof data === "string" ? new Blob([data], { type: contentType }) : new Blob([data as any], { type: contentType });
+  const uploadResp = await fetch(uploadUrl, { method: "PUT", headers: { "Content-Type": contentType }, body: blob });
+  if (!uploadResp.ok) throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
+  return { key, url };
+}
 
-  const uploadResp = await fetch(uploadUrl, {
+export async function storagePutFile(
+  relKey: string,
+  filePath: string,
+  contentType: string,
+  fileSize: number,
+): Promise<{ key: string; url: string }> {
+  const { key, uploadUrl, url } = await storagePreparePut(relKey);
+  const request = {
     method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: blob,
-  });
-
-  if (!uploadResp.ok) {
-    throw new Error(`Storage upload to S3 failed (${uploadResp.status})`);
-  }
-
+    headers: { "Content-Type": contentType, "Content-Length": String(fileSize) },
+    body: createReadStream(filePath),
+    duplex: "half" as const,
+  } as unknown as RequestInit & { duplex: "half" };
+  const uploadResp = await fetch(uploadUrl, request);
+  if (!uploadResp.ok) throw new Error(`Storage stream upload failed (${uploadResp.status})`);
   return { key, url };
 }
 
@@ -83,13 +86,9 @@ export async function storageGet(relKey: string): Promise<{ key: string; url: st
 export async function storageGetSignedUrl(relKey: string): Promise<string> {
   const { forgeUrl, forgeKey } = getForgeConfig();
   const key = normalizeKey(relKey);
-
   const getUrl = new URL("v1/storage/presign/get", forgeUrl + "/");
   getUrl.searchParams.set("path", key);
-
-  const resp = await fetch(getUrl, {
-    headers: { Authorization: `Bearer ${forgeKey}` },
-  });
+  const resp = await fetch(getUrl, { headers: { Authorization: `Bearer ${forgeKey}` } });
 
   if (!resp.ok) {
     const msg = await resp.text().catch(() => resp.statusText);

@@ -19,36 +19,85 @@ function formatBytes(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function uploadToServer(
-  file: File,
-  metadata: { title: string; category: string; kind: MediaKind },
-  onProgress: (percent: number) => void,
-) {
-  return new Promise<void>((resolve, reject) => {
+function sendUploadChunk(uploadId: string, offset: number, chunk: Blob, fileSize: number, onProgress: (percent: number) => void) {
+  return new Promise<number>((resolve, reject) => {
     const request = new XMLHttpRequest();
-    request.open("POST", "/api/admin/media-upload");
+    request.open("POST", "/api/admin/media-upload/chunk");
     request.withCredentials = true;
     request.setRequestHeader("Content-Type", "application/octet-stream");
-    request.setRequestHeader("X-File-Name", encodeURIComponent(file.name));
-    request.setRequestHeader("X-Media-Kind", metadata.kind);
-    request.setRequestHeader("X-Content-Type", file.type);
-    request.setRequestHeader("X-Title", encodeURIComponent(metadata.title));
-    request.setRequestHeader("X-Category", encodeURIComponent(metadata.category));
+    request.setRequestHeader("X-Upload-Id", uploadId);
+    request.setRequestHeader("X-Offset", String(offset));
     request.upload.onprogress = event => {
-      if (event.lengthComputable) onProgress(Math.min(99, Math.round((event.loaded / event.total) * 100)));
+      if (event.lengthComputable) onProgress(Math.min(99, Math.round(((offset + event.loaded) / fileSize) * 100)));
     };
     request.onload = () => {
-      if (request.status >= 200 && request.status < 300) resolve();
+      if (request.status >= 200 && request.status < 300) {
+        try {
+          const nextOffset = Number(JSON.parse(request.responseText).nextOffset);
+          if (Number.isSafeInteger(nextOffset)) return resolve(nextOffset);
+        } catch { /* fall through */ }
+        return reject(new Error("Server trả về tiến độ upload không hợp lệ."));
+      }
       else {
-        let message = `Server từ chối upload (${request.status})`;
+        let message = `Server từ chối chunk (${request.status})`;
         try { message = JSON.parse(request.responseText).error || message; } catch { /* keep fallback */ }
         reject(new Error(message));
       }
     };
     request.onerror = () => reject(new Error("Kết nối upload bị gián đoạn. Hãy thử lại với cùng file."));
     request.onabort = () => reject(new Error("Upload đã bị hủy trước khi hoàn tất."));
-    request.send(file);
+    request.send(chunk);
   });
+}
+
+async function uploadToServer(
+  file: File,
+  metadata: { title: string; category: string; kind: MediaKind },
+  onProgress: (percent: number) => void,
+) {
+  const startResponse = await fetch("/api/admin/media-upload/start", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...metadata, fileName: file.name, contentType: file.type, size: file.size }),
+  });
+  const startPayload = await startResponse.json().catch(() => ({}));
+  if (!startResponse.ok) throw new Error(startPayload.error || `Không thể bắt đầu upload (${startResponse.status})`);
+
+  const uploadId = String(startPayload.uploadId || "");
+  const chunkSize = Number(startPayload.chunkSize) || 8 * 1024 * 1024;
+  if (!uploadId) throw new Error("Server không tạo được phiên upload");
+
+  let offset = 0;
+  while (offset < file.size) {
+    const chunkStart = offset;
+    const chunk = file.slice(chunkStart, Math.min(chunkStart + chunkSize, file.size));
+    const chunkEnd = chunkStart + chunk.size;
+    let lastError: unknown;
+    let chunkCompleted = false;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        offset = await sendUploadChunk(uploadId, chunkStart, chunk, file.size, onProgress);
+        chunkCompleted = offset >= chunkEnd;
+        break;
+      } catch (error) {
+        lastError = error;
+        await new Promise(resolve => setTimeout(resolve, 500 * (attempt + 1)));
+      }
+    }
+    if (!chunkCompleted) {
+      throw lastError instanceof Error ? lastError : new Error("Upload bị gián đoạn sau 3 lần thử");
+    }
+  }
+
+  const completeResponse = await fetch("/api/admin/media-upload/complete", {
+    method: "POST",
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ uploadId }),
+  });
+  const completePayload = await completeResponse.json().catch(() => ({}));
+  if (!completeResponse.ok) throw new Error(completePayload.error || `Không thể hoàn tất upload (${completeResponse.status})`);
 }
 
 export default function AdminVideos() {

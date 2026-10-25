@@ -15,8 +15,8 @@
 - `drizzle/schema.ts`: bảng `videos` lưu cả media `image`/`video` với kind, title, category, storageKey, contentType, fileSize kiểu BIGINT, createdByOpenId, isPublished và timestamps.
 - `server/db.ts`: thêm truy vấn list public/admin, insert video và cập nhật trạng thái/metadata.
 - `server/routers.ts`: public query `videos.list`; admin procedures `admin.videos.list`, `prepareUpload`, `create`, `update` và `archive` dùng `adminProcedure`.
-- `server/_core/index.ts`: endpoint `/api/admin/media-upload` xác thực owner, nhận raw file tối đa 2 GB và lưu qua server-side Storage; không phụ thuộc CORS của presigned S3 URL.
-- `server/storage.ts`: dùng presigned PUT nội bộ server, không đưa API key xuống browser; browser gửi raw file cùng origin, tránh base64 và giảm lag.
+- `server/_core/index.ts`: các endpoint start/chunk/complete xác thực owner, nhận từng chunk 8 MB tối đa 2 GB và ghép qua file tạm trước khi stream tới server-side Storage; không phụ thuộc CORS hoặc timeout của một request 2 GB.
+- `server/storage.ts`: dùng presigned PUT nội bộ server với read stream, không đưa API key xuống browser; browser gửi chunk cùng origin, tránh base64 và có retry.
 - `client/src/pages/AdminVideos.tsx`: Manus OAuth state, form upload ảnh/video và danh sách quản lý.
 - `client/src/pages/Home.tsx`: query video động và fallback sang `videoMedia` tĩnh.
 - `client/src/App.tsx`: đăng ký route admin và route manifest `/manus-routes.json`.
