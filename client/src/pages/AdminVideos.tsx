@@ -20,7 +20,7 @@ function formatBytes(bytes: number) {
 }
 
 function sendUploadChunk(uploadId: string, offset: number, chunk: Blob, fileSize: number, onProgress: (percent: number) => void) {
-  return new Promise<number>((resolve, reject) => {
+  return new Promise<{ nextOffset: number; key: string; size: number }>((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open("POST", "/api/admin/media-upload/chunk");
     request.withCredentials = true;
@@ -33,8 +33,10 @@ function sendUploadChunk(uploadId: string, offset: number, chunk: Blob, fileSize
     request.onload = () => {
       if (request.status >= 200 && request.status < 300) {
         try {
-          const nextOffset = Number(JSON.parse(request.responseText).nextOffset);
-          if (Number.isSafeInteger(nextOffset)) return resolve(nextOffset);
+          const payload = JSON.parse(request.responseText);
+          const nextOffset = Number(payload.nextOffset);
+          const size = Number(payload.size);
+          if (Number.isSafeInteger(nextOffset) && typeof payload.key === "string" && Number.isSafeInteger(size)) return resolve({ nextOffset, key: payload.key, size });
         } catch { /* fall through */ }
         return reject(new Error("Server trả về tiến độ upload không hợp lệ."));
       }
@@ -69,6 +71,7 @@ async function uploadToServer(
   if (!uploadId) throw new Error("Server không tạo được phiên upload");
 
   let offset = 0;
+  const uploadedChunks: Array<{ offset: number; key: string; size: number }> = [];
   while (offset < file.size) {
     const chunkStart = offset;
     const chunk = file.slice(chunkStart, Math.min(chunkStart + chunkSize, file.size));
@@ -77,7 +80,9 @@ async function uploadToServer(
     let chunkCompleted = false;
     for (let attempt = 0; attempt < 3; attempt += 1) {
       try {
-        offset = await sendUploadChunk(uploadId, chunkStart, chunk, file.size, onProgress);
+        const receipt = await sendUploadChunk(uploadId, chunkStart, chunk, file.size, onProgress);
+        offset = receipt.nextOffset;
+        uploadedChunks.push({ offset: chunkStart, key: receipt.key, size: receipt.size });
         chunkCompleted = offset >= chunkEnd;
         break;
       } catch (error) {
@@ -94,7 +99,16 @@ async function uploadToServer(
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ uploadId }),
+    body: JSON.stringify({
+      uploadId,
+      fileName: file.name,
+      contentType: file.type,
+      size: file.size,
+      title: metadata.title,
+      category: metadata.category,
+      kind: metadata.kind,
+      chunks: uploadedChunks,
+    }),
   });
   const completePayload = await completeResponse.json().catch(() => ({}));
   if (!completeResponse.ok) throw new Error(completePayload.error || `Không thể hoàn tất upload (${completeResponse.status})`);

@@ -1,7 +1,6 @@
 import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
-import { createReadStream } from "node:fs";
 import { promises as fs } from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -14,25 +13,10 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { sdk } from "./sdk";
 import * as db from "../db";
-import { storagePutFile } from "../storage";
+import { storageGetSignedUrl, storagePut, storagePutFile } from "../storage";
 
 const MAX_MEDIA_BYTES = 2 * 1024 * 1024 * 1024;
 const CHUNK_SIZE = 8 * 1024 * 1024;
-
-type UploadSession = {
-  path: string;
-  size: number;
-  received: number;
-  fileName: string;
-  title: string;
-  category: string;
-  kind: "image" | "video";
-  contentType: string;
-  openId: string;
-  updatedAt: number;
-};
-
-const uploadSessions = new Map<string, UploadSession>();
 
 async function getAdminUser(req: express.Request) {
   try {
@@ -51,6 +35,10 @@ function text(value: unknown, fallback: string) {
   return typeof value === "string" && value.trim() ? value.trim() : fallback;
 }
 
+function isUploadId(value: string) {
+  return /^[a-f0-9-]{36}$/i.test(value);
+}
+
 async function startServer() {
   const app = express();
   const server = createServer(app);
@@ -65,22 +53,7 @@ async function startServer() {
     if (!kind || !/^(image|video)\//.test(contentType)) return res.status(400).json({ error: "Thiếu loại file ảnh/video hợp lệ" });
     if (!Number.isSafeInteger(size) || size <= 0 || size > MAX_MEDIA_BYTES) return res.status(413).json({ error: "Ảnh hoặc video phải nhỏ hơn hoặc bằng 2 GB" });
 
-    const uploadId = randomUUID();
-    const tempPath = path.join(os.tmpdir(), `phan-media-${uploadId}.upload`);
-    await fs.writeFile(tempPath, Buffer.alloc(0));
-    uploadSessions.set(uploadId, {
-      path: tempPath,
-      size,
-      received: 0,
-      fileName: text(req.body?.fileName, kind === "image" ? "image.jpg" : "video.mp4"),
-      title: text(req.body?.title, "Tư liệu mới"),
-      category: text(req.body?.category, kind === "image" ? "Hình ảnh sự kiện" : "MC sự kiện"),
-      kind,
-      contentType,
-      openId: user.openId,
-      updatedAt: Date.now(),
-    });
-    return res.json({ uploadId, chunkSize: CHUNK_SIZE });
+    return res.json({ uploadId: randomUUID(), chunkSize: CHUNK_SIZE });
   });
 
   app.post("/api/admin/media-upload/chunk", express.raw({ type: "application/octet-stream", limit: "12mb" }), async (req, res) => {
@@ -89,18 +62,18 @@ async function startServer() {
 
     const uploadId = String(req.headers["x-upload-id"] || "");
     const offset = Number(req.headers["x-offset"]);
-    const session = uploadSessions.get(uploadId);
     const body = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
-    if (!session || session.openId !== user.openId) return res.status(404).json({ error: "Phiên upload không tồn tại" });
+    if (!isUploadId(uploadId)) return res.status(400).json({ error: "Mã phiên upload không hợp lệ" });
     if (!Number.isSafeInteger(offset) || offset < 0) return res.status(400).json({ error: "Offset upload không hợp lệ" });
-    if (offset < session.received && offset + body.byteLength <= session.received) return res.json({ nextOffset: session.received });
-    if (offset !== session.received) return res.status(409).json({ error: "Chunk không đúng thứ tự", nextOffset: session.received });
-    if (!body.byteLength || body.byteLength > CHUNK_SIZE || session.received + body.byteLength > session.size) return res.status(413).json({ error: "Kích thước chunk không hợp lệ" });
+    if (!body.byteLength || body.byteLength > CHUNK_SIZE) return res.status(413).json({ error: "Kích thước chunk không hợp lệ" });
 
-    await fs.appendFile(session.path, body);
-    session.received += body.byteLength;
-    session.updatedAt = Date.now();
-    return res.json({ nextOffset: session.received });
+    try {
+      const stored = await storagePut(`media-upload-chunks/${uploadId}/${offset}.part`, body, "application/octet-stream");
+      return res.json({ nextOffset: offset + body.byteLength, key: stored.key, size: body.byteLength });
+    } catch (error) {
+      console.error("[Media upload chunk]", error);
+      return res.status(502).json({ error: error instanceof Error ? error.message : "Không thể lưu chunk lên Storage" });
+    }
   });
 
   app.post("/api/admin/media-upload/complete", express.json({ limit: "1mb" }), async (req, res) => {
@@ -108,32 +81,65 @@ async function startServer() {
     if (!user) return res.status(403).json({ error: "Bạn không có quyền upload media" });
 
     const uploadId = String(req.body?.uploadId || "");
-    const session = uploadSessions.get(uploadId);
-    if (!session || session.openId !== user.openId) return res.status(404).json({ error: "Phiên upload không tồn tại" });
-    if (session.received !== session.size) return res.status(409).json({ error: `File chưa tải đủ (${session.received}/${session.size} bytes)` });
+    const kind = req.body?.kind === "image" ? "image" : req.body?.kind === "video" ? "video" : null;
+    const contentType = text(req.body?.contentType, "");
+    const size = Number(req.body?.size);
+    const chunks = Array.isArray(req.body?.chunks) ? req.body.chunks : [];
+    if (!isUploadId(uploadId) || !kind || !/^(image|video)\//.test(contentType) || !Number.isSafeInteger(size) || size <= 0 || size > MAX_MEDIA_BYTES) {
+      return res.status(400).json({ error: "Thông tin hoàn tất upload không hợp lệ" });
+    }
+    if (chunks.length === 0 || chunks.length > Math.ceil(MAX_MEDIA_BYTES / CHUNK_SIZE)) return res.status(400).json({ error: "Danh sách chunk không hợp lệ" });
 
+    const ordered = [...chunks].sort((a, b) => Number(a.offset) - Number(b.offset));
+    let expectedOffset = 0;
+    let totalSize = 0;
+    for (const chunk of ordered) {
+      const offset = Number(chunk?.offset);
+      const chunkSize = Number(chunk?.size);
+      const key = String(chunk?.key || "");
+      if (!Number.isSafeInteger(offset) || offset !== expectedOffset || !Number.isSafeInteger(chunkSize) || chunkSize <= 0 || chunkSize > CHUNK_SIZE || !key.startsWith(`media-upload-chunks/${uploadId}/`)) {
+        return res.status(400).json({ error: "Chunk bị thiếu, sai thứ tự hoặc không thuộc phiên upload này" });
+      }
+      expectedOffset += chunkSize;
+      totalSize += chunkSize;
+    }
+    if (totalSize !== size) return res.status(409).json({ error: `Kích thước chunk chưa đủ (${totalSize}/${size} bytes)` });
+
+    const tempPath = path.join(os.tmpdir(), `phan-media-${uploadId}.upload`);
     try {
-      const uploaded = await storagePutFile(`media/${session.kind}s/${safeFileName(session.fileName, session.kind)}`, session.path, session.contentType, session.size);
+      await fs.writeFile(tempPath, Buffer.alloc(0));
+      for (const chunk of ordered) {
+        const signedUrl = await storageGetSignedUrl(String(chunk.key));
+        const response = await fetch(signedUrl);
+        if (!response.ok) throw new Error(`Không đọc được chunk Storage (${response.status})`);
+        const bytes = Buffer.from(await response.arrayBuffer());
+        if (bytes.byteLength !== Number(chunk.size)) throw new Error("Kích thước chunk Storage không khớp");
+        await fs.appendFile(tempPath, bytes);
+      }
+
+      const fileName = text(req.body?.fileName, kind === "image" ? "image.jpg" : "video.mp4");
+      const title = text(req.body?.title, fileName.replace(/\.[^/.]+$/, ""));
+      const category = text(req.body?.category, kind === "image" ? "Hình ảnh sự kiện" : "MC sự kiện");
+      const uploaded = await storagePutFile(`media/${kind}s/${safeFileName(fileName, kind)}`, tempPath, contentType, size);
       const record = await db.createVideo({
-        title: session.title.slice(0, 255),
-        category: session.category.slice(0, 120),
-        kind: session.kind,
+        title: title.slice(0, 255),
+        category: category.slice(0, 120),
+        kind,
         storageKey: uploaded.key,
-        contentType: session.contentType,
-        fileSize: session.size,
-        createdByOpenId: session.openId,
+        contentType,
+        fileSize: size,
+        createdByOpenId: user.openId,
         isPublished: 1,
       });
-      uploadSessions.delete(uploadId);
-      await fs.unlink(session.path).catch(() => undefined);
       return res.status(201).json({ id: String(record.id), src: uploaded.url, title: record.title, category: record.category, kind: record.kind, fileSize: record.fileSize });
     } catch (error) {
       console.error("[Media upload complete]", error);
-      return res.status(500).json({ error: error instanceof Error ? error.message : "Không thể lưu media" });
+      return res.status(500).json({ error: error instanceof Error ? error.message : "Không thể hoàn tất upload" });
+    } finally {
+      await fs.unlink(tempPath).catch(() => undefined);
     }
   });
 
-  // Metadata APIs stay small; upload chunks use the route-specific raw parser above.
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
