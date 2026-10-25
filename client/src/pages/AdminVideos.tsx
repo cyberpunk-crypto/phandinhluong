@@ -135,6 +135,12 @@ export default function AdminVideos() {
   });
 
   useEffect(() => {
+    if (window.location.hostname === "cyberpunk-crypto.github.io") {
+      window.location.replace("https://tinhsite-k2cudstk.manus.space/admin/videos");
+    }
+  }, []);
+
+  useEffect(() => {
     if (!mediaQuery.data) return;
     setDrafts(Object.fromEntries(mediaQuery.data.map(media => [media.id, {
       title: media.title,
